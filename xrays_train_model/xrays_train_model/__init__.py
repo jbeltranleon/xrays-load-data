@@ -109,6 +109,23 @@ def create_model_vgg16(weights, t_x, all_labels, loss, optimizer_with_lr):
                             metrics = ['accuracy','binary_accuracy', 'mae'])
     return multi_disease_model
 
+def create_model_vgg19(weights, t_x, all_labels, loss, optimizer_with_lr):
+    # input_shape is the dimensions in the first layer
+    vgg19_model = VGG19(input_shape =  t_x.shape[1:], 
+                                 include_top = False, weights = 'imagenet')
+
+    multi_disease_model = Sequential()
+    multi_disease_model.add(vgg19_model)
+
+    multi_disease_model.add(Flatten())
+    multi_disease_model.add(Dense(units=4096, activation='relu', kernel_initializer='VarianceScaling'))
+    multi_disease_model.add(Dense(units=4096, activation='relu', kernel_initializer='VarianceScaling'))
+    multi_disease_model.add(Dense(units=len(all_labels), activation='softmax', kernel_initializer='VarianceScaling'))
+
+    multi_disease_model.compile(optimizer=optimizer_with_lr, loss=loss ,
+                            metrics = ['accuracy','binary_accuracy', 'mae'])
+    return multi_disease_model
+
 class LossHistory(kcall.Callback):
     def on_train_begin(self, logs={}):
         #Batch
