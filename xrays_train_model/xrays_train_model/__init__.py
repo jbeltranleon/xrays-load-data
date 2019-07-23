@@ -4,6 +4,9 @@ from keras.applications.densenet import DenseNet121
 from keras.applications.densenet import DenseNet169
 from keras.applications.densenet import DenseNet201
 from keras.applications.mobilenet import MobileNet
+from keras.applications.vgg16 import VGG16
+from keras.applications.vgg19 import VGG19
+
 # Extra Layers
 from keras.layers import Dense, Flatten, GlobalAveragePooling2D, Reshape, Dropout, Conv2D, Activation
 # Create as hamburger
@@ -89,7 +92,22 @@ def create_model_mobilenet(weights, t_x, all_labels, loss, optimizer_with_lr):
                             metrics = ['accuracy','binary_accuracy', 'mae'])
     return multi_disease_model
 
+def create_model_vgg16(weights, t_x, all_labels, loss, optimizer_with_lr):
+    # input_shape is the dimensions in the first layer
+    vgg16_model = VGG16(input_shape =  t_x.shape[1:], 
+                                 include_top = False, weights = 'imagenet')
 
+    multi_disease_model = Sequential()
+    multi_disease_model.add(vgg16_model)
+
+    multi_disease_model.add(Flatten())
+    multi_disease_model.add(Dense(units=4096, activation='relu', kernel_initializer='VarianceScaling'))
+    multi_disease_model.add(Dense(units=4096, activation='relu', kernel_initializer='VarianceScaling'))
+    multi_disease_model.add(Dense(units=len(all_labels), activation='softmax', kernel_initializer='VarianceScaling'))
+
+    multi_disease_model.compile(optimizer=optimizer_with_lr, loss=loss ,
+                            metrics = ['accuracy','binary_accuracy', 'mae'])
+    return multi_disease_model
 
 class LossHistory(kcall.Callback):
     def on_train_begin(self, logs={}):
