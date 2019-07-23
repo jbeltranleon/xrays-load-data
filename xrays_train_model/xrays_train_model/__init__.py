@@ -6,6 +6,10 @@ from keras.applications.densenet import DenseNet201
 from keras.applications.mobilenet import MobileNet
 from keras.applications.vgg16 import VGG16
 from keras.applications.vgg19 import VGG19
+from keras.applications.inception_v3 import InceptionV3
+from keras.applications.xception import Xception
+from keras.applications.resnet50 import ResNet50
+from keras.applications.inception_resnet_v2 import InceptionResNetV2
 
 # Extra Layers
 from keras.layers import Dense, Flatten, GlobalAveragePooling2D, Reshape, Dropout, Conv2D, Activation
@@ -95,7 +99,7 @@ def create_model_mobilenet(weights, t_x, all_labels, loss, optimizer_with_lr):
 def create_model_vgg16(weights, t_x, all_labels, loss, optimizer_with_lr):
     # input_shape is the dimensions in the first layer
     vgg16_model = VGG16(input_shape =  t_x.shape[1:], 
-                                 include_top = False, weights = 'imagenet')
+                                 include_top = False, weights = weights)
 
     multi_disease_model = Sequential()
     multi_disease_model.add(vgg16_model)
@@ -112,7 +116,7 @@ def create_model_vgg16(weights, t_x, all_labels, loss, optimizer_with_lr):
 def create_model_vgg19(weights, t_x, all_labels, loss, optimizer_with_lr):
     # input_shape is the dimensions in the first layer
     vgg19_model = VGG19(input_shape =  t_x.shape[1:], 
-                                 include_top = False, weights = 'imagenet')
+                                 include_top = False, weights = weights)
 
     multi_disease_model = Sequential()
     multi_disease_model.add(vgg19_model)
@@ -120,6 +124,66 @@ def create_model_vgg19(weights, t_x, all_labels, loss, optimizer_with_lr):
     multi_disease_model.add(Flatten())
     multi_disease_model.add(Dense(units=4096, activation='relu', kernel_initializer='VarianceScaling'))
     multi_disease_model.add(Dense(units=4096, activation='relu', kernel_initializer='VarianceScaling'))
+    multi_disease_model.add(Dense(units=len(all_labels), activation='softmax', kernel_initializer='VarianceScaling'))
+
+    multi_disease_model.compile(optimizer=optimizer_with_lr, loss=loss ,
+                            metrics = ['accuracy','binary_accuracy', 'mae'])
+    return multi_disease_model
+
+def create_model_inception_v3(weights, t_x, all_labels, loss, optimizer_with_lr):
+    # input_shape is the dimensions in the first layer
+    inception_v3_model = InceptionV3(input_shape =  t_x.shape[1:], 
+                                 include_top = False, weights = weights)
+
+    multi_disease_model = Sequential()
+    multi_disease_model.add(inception_v3_model)
+
+    multi_disease_model.add(GlobalAveragePooling2D())
+    multi_disease_model.add(Dense(units=len(all_labels), activation='softmax', kernel_initializer='VarianceScaling'))
+    
+    multi_disease_model.compile(optimizer=optimizer_with_lr, loss=loss ,
+                            metrics = ['accuracy','binary_accuracy', 'mae'])
+    return multi_disease_model
+
+def create_model_xception(weights, t_x, all_labels, loss, optimizer_with_lr):
+    # input_shape is the dimensions in the first layer
+    xception_model = Xception(input_shape =  t_x.shape[1:], 
+                                 include_top = False, weights = weights)
+
+    multi_disease_model = Sequential()
+    multi_disease_model.add(xception_model)
+
+    multi_disease_model.add(GlobalAveragePooling2D())
+    multi_disease_model.add(Dense(units=len(all_labels), activation='softmax', kernel_initializer='VarianceScaling'))
+
+    multi_disease_model.compile(optimizer=optimizer_with_lr, loss=loss ,
+                            metrics = ['accuracy','binary_accuracy', 'mae'])
+    return multi_disease_model
+
+def create_model_resnet50(weights, t_x, all_labels, loss, optimizer_with_lr):
+    # input_shape is the dimensions in the first layer
+    resnet50_model = ResNet50(input_shape =  t_x.shape[1:], 
+                                 include_top = False, weights = weights)
+
+    multi_disease_model = Sequential()
+    multi_disease_model.add(resnet50_model)
+
+    multi_disease_model.add(Flatten())
+    multi_disease_model.add(Dense(units=len(all_labels), activation = 'softmax', kernel_initializer='VarianceScaling'))
+
+    multi_disease_model.compile(optimizer=optimizer_with_lr, loss=loss ,
+                            metrics = ['accuracy','binary_accuracy', 'mae'])
+    return multi_disease_model
+
+def create_model_inceptionresnetv2(weights, t_x, all_labels, loss, optimizer_with_lr):
+    # input_shape is the dimensions in the first layer
+    inceptionresnetv2_model = InceptionResNetV2(input_shape =  t_x.shape[1:], 
+                                 include_top = False, weights = weights)
+
+    multi_disease_model = Sequential()
+    multi_disease_model.add(inceptionresnetv2_model)
+
+    multi_disease_model.add(GlobalAveragePooling2D())
     multi_disease_model.add(Dense(units=len(all_labels), activation='softmax', kernel_initializer='VarianceScaling'))
 
     multi_disease_model.compile(optimizer=optimizer_with_lr, loss=loss ,
